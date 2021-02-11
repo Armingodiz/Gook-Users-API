@@ -9,6 +9,7 @@ var (
 
 func StartApplication() {
 	mapUrls()
+	// for cloud to hit it and understand our web server is still running
 	err := router.Run(":8080")
 	if err != nil {
 		panic(err)
