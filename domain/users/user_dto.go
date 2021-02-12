@@ -1,5 +1,6 @@
 package users
-
+// data transfer object == > the object that
+//we are going to be transferring from the persistence layer to application backward
 import (
 	"github.com/ArminGodiz/Gook-Users-API/utils/errors"
 	"strings"

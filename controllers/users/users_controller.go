@@ -6,6 +6,7 @@ import (
 	"github.com/ArminGodiz/Gook-Users-API/utils/errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // provide endpoints to interact with users API
@@ -30,8 +31,17 @@ func CreateUser(c *gin.Context) {
 
 // handle every request for getting user from db
 func GetUser(c *gin.Context) {
-
-	c.String(http.StatusNotImplemented, "implementing ... ")
+	userID, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+	if userErr != nil {
+		err := errors.NewBadRequestError("user id should be a number ")
+		c.JSON(err.Code, err)
+		return
+	}
+	user, getErr := services.GetUser(userID)
+	if getErr != nil {
+		c.JSON(getErr.Code, getErr)
+	}
+	c.JSON(http.StatusOK, user)
 }
 
 /*func SearchUser(c *gin.Context) {
