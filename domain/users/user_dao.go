@@ -13,6 +13,7 @@ const (
 	queryInsertUser = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?, ?, ?, ?);"
 	queryGetUser    = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
 	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
+	queryDeleteUser = "DELETE FROM users WHERE id=?;"
 )
 
 var (
@@ -62,6 +63,18 @@ func (user *User) Update() *errors.RestErr {
 	_, err = stm.Exec(user.FirsName, user.LastNAme, user.Email, user.Id)
 	if err != nil {
 		return errors.NewInternalServerError("error trying to Update user : " + err.Error())
+	}
+	return nil
+}
+
+func (user *User) Delete() *errors.RestErr {
+	stm, err := users_db.Client.Prepare(queryDeleteUser)
+	if err != nil {
+		return errors.NewInternalServerError("error trying to delete user : " + err.Error())
+	}
+	defer stm.Close()
+	if _, err := stm.Exec(user.Id); err != nil {
+		return errors.NewInternalServerError("error trying to delete user : " + err.Error())
 	}
 	return nil
 }

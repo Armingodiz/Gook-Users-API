@@ -13,7 +13,16 @@ import (
 // every request should be handled by the controller , so this is our entry point of our application
 
 // handle every request for creating user
-func CreateUser(c *gin.Context) {
+
+func getUserID(userIdParam string) (int64, *errors.RestErr) {
+	userID, userErr := strconv.ParseInt(userIdParam, 10, 64)
+	if userErr != nil {
+		return 0, errors.NewBadRequestError("user id should be a number ")
+	}
+	return userID, nil
+}
+
+func Create(c *gin.Context) {
 	var user users.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		restErr := errors.NewBadRequestError("invalid json body !")
@@ -30,11 +39,10 @@ func CreateUser(c *gin.Context) {
 }
 
 // handle every request for getting user from db
-func GetUser(c *gin.Context) {
-	userID, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+func Get(c *gin.Context) {
+	userID, userErr := getUserID(c.Param("user_id"))
 	if userErr != nil {
-		err := errors.NewBadRequestError("user id should be a number ")
-		c.JSON(err.Code, err)
+		c.JSON(userErr.Code, userErr)
 		return
 	}
 	user, getErr := services.GetUser(userID)
@@ -44,11 +52,10 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func UpdateUser(c *gin.Context) {
-	userID, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
+func Update(c *gin.Context) {
+	userID, userErr := getUserID(c.Param("user_id"))
 	if userErr != nil {
-		err := errors.NewBadRequestError("user id should be a number ")
-		c.JSON(err.Code, err)
+		c.JSON(userErr.Code, userErr)
 		return
 	}
 	var user users.User
@@ -69,6 +76,16 @@ func UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-/*func SearchUser(c *gin.Context) {
-	c.String(http.StatusNotImplemented, "implementing ... ")
-}*/
+func Delete(c *gin.Context) {
+	userID, userErr := getUserID(c.Param("user_id"))
+	if userErr != nil {
+		c.JSON(userErr.Code, userErr)
+		return
+	}
+	if err := services.DeleteUser(userID); err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+	// dont use c.String because we should use the same type of body answer for an endpoint
+	c.JSON(http.StatusOK, map[string]string{"status": "deleted !"})
+}
