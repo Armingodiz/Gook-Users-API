@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+	"github.com/ArminGodiz/Gook-Users-API/datasources/mysql/users_db"
 	"github.com/ArminGodiz/Gook-Users-API/utils/errors"
 	"time"
 )
@@ -27,6 +28,9 @@ func (user *User) Save() *errors.RestErr {
 }
 
 func (user *User) Get() *errors.RestErr {
+	if err := users_db.Client.Ping(); err != nil {
+		panic(err)
+	}
 	result := usersDB[user.Id]
 	if result == nil {
 		return errors.NewNotFoundError(fmt.Sprint("user %d not found", user.Id))
