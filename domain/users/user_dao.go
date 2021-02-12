@@ -10,8 +10,9 @@ import (
 // user data access object
 
 const (
-	queryInsertUser = ("INSERT INTO users(first_name, last_name, email, date_created) VALUES(?, ?, ?, ?);")
-	queryGetUser    = ("SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;")
+	queryInsertUser = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?, ?, ?, ?);"
+	queryGetUser    = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
+	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
 )
 
 var (
@@ -49,5 +50,18 @@ func (user *User) Save() *errors.RestErr {
 
 	}
 	user.Id = userId
+	return nil
+}
+
+func (user *User) Update() *errors.RestErr {
+	stm, err := users_db.Client.Prepare(queryUpdateUser)
+	if err != nil {
+		return errors.NewInternalServerError("error trying to Update user : " + err.Error())
+	}
+	defer stm.Close()
+	_, err = stm.Exec(user.FirsName, user.LastNAme, user.Email, user.Id)
+	if err != nil {
+		return errors.NewInternalServerError("error trying to Update user : " + err.Error())
+	}
 	return nil
 }
