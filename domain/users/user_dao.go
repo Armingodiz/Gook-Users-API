@@ -9,21 +9,31 @@ import (
 
 // user data access object
 
+const (
+	queryInsertUser = ("INSERT INTO users(first_name, last_name, email, date_created) VALUES(?, ?, ?, ?);")
+)
+
 var (
 	usersDB = make(map[int64]*User)
 )
 
 func (user *User) Save() *errors.RestErr {
-	current := usersDB[user.Id]
-	if current != nil {
-		if current.Email == user.Email {
-			return errors.NewBadRequestError(fmt.Sprint("email %s already registred ", user.Email))
-		}
-		return errors.NewBadRequestError(fmt.Sprint("user %d not already request", user.Id))
+	stm, err := users_db.Client.Prepare(queryInsertUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
 	}
-	now := time.Now()
-	user.DateCreated = now.Format("2006-01-02T15:04:05Z")
-	usersDB[user.Id] = user
+	defer stm.Close()
+	user.DateCreated = time.Now().String()
+	insertResult, err := stm.Exec(user.FirsName, user.LastNAme, user.Email, user.DateCreated)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	userId, err := insertResult.LastInsertId()
+	if err != nil {
+		return errors.NewInternalServerError("error trying to save user ")
+
+	}
+	user.Id = userId
 	return nil
 }
 
