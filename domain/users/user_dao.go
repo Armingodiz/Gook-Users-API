@@ -21,7 +21,7 @@ var (
 func (user *User) Get() *errors.RestErr {
 	stm, err := users_db.Client.Prepare(queryGetUser)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError("error when getting user from db " + err.Error())
 	}
 	defer stm.Close()
 	result := stm.QueryRow(user.Id)
@@ -35,17 +35,17 @@ func (user *User) Get() *errors.RestErr {
 func (user *User) Save() *errors.RestErr {
 	stm, err := users_db.Client.Prepare(queryInsertUser)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError("error trying to save user : " + err.Error())
 	}
 	defer stm.Close()
 	user.DateCreated = time.Now().String()
 	insertResult, err := stm.Exec(user.FirsName, user.LastNAme, user.Email, user.DateCreated)
 	if err != nil {
-		return errors.NewInternalServerError(err.Error())
+		return errors.NewInternalServerError("error trying to save user : " + err.Error())
 	}
 	userId, err := insertResult.LastInsertId()
 	if err != nil {
-		return errors.NewInternalServerError("error trying to save user ")
+		return errors.NewInternalServerError("error trying to save user : " + err.Error())
 
 	}
 	user.Id = userId
