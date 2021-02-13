@@ -10,10 +10,11 @@ import (
 // user data access object
 
 const (
-	queryInsertUser = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?, ?, ?, ?);"
-	queryGetUser    = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
-	queryUpdateUser = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
-	queryDeleteUser = "DELETE FROM users WHERE id=?;"
+	queryInsertUser        = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?, ?, ?, ?);"
+	queryGetUser           = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
+	queryUpdateUser        = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
+	queryDeleteUser        = "DELETE FROM users WHERE id=?;"
+	queryFoundUserByStatus = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?;"
 )
 
 var (
@@ -77,4 +78,29 @@ func (user *User) Delete() *errors.RestErr {
 		return errors.NewInternalServerError("error trying to delete user : " + err.Error())
 	}
 	return nil
+}
+
+func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
+	stm, err := users_db.Client.Prepare(queryFoundUserByStatus)
+	if err != nil {
+		return nil, errors.NewInternalServerError("error trying to find  user by status  : " + err.Error())
+	}
+	defer stm.Close()
+	rows, err := stm.Query(status)
+	if err != nil {
+		return nil, errors.NewInternalServerError("error trying to find  user by status  : " + err.Error())
+	}
+	defer rows.Close()
+	result := make([]User, 0)
+	for rows.Next() {
+		var newUser User
+		if err := rows.Scan(&newUser.Id, &newUser.FirsName, &newUser.LastNAme, &newUser.Email, &newUser.DateCreated, &newUser.Status); err != nil {
+			return nil, errors.NewInternalServerError("error trying to find  user by status  : " + err.Error())
+		}
+		result = append(result, newUser)
+	}
+	if len(result) == 0 {
+		return nil, errors.NewInternalServerError("no match while trying to find  user by status  : " + err.Error())
+	}
+	return result, nil
 }
