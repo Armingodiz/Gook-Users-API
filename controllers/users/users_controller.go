@@ -89,3 +89,12 @@ func Delete(c *gin.Context) {
 	// dont use c.String because we should use the same type of body answer for an endpoint
 	c.JSON(http.StatusOK, map[string]string{"status": "deleted !"})
 }
+func Search(c *gin.Context) {
+	status := c.Query("status")
+	users, err := services.Search(status)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+	c.JSON(http.StatusOK, users)
+}

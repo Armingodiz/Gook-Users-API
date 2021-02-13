@@ -10,8 +10,8 @@ import (
 // user data access object
 
 const (
-	queryInsertUser        = "INSERT INTO users(first_name, last_name, email, date_created) VALUES(?, ?, ?, ?);"
-	queryGetUser           = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?;"
+	queryInsertUser        = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?, ?, ?, ?, ?, ?);"
+	queryGetUser           = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE id=?;"
 	queryUpdateUser        = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
 	queryDeleteUser        = "DELETE FROM users WHERE id=?;"
 	queryFoundUserByStatus = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?;"
@@ -28,7 +28,7 @@ func (user *User) Get() *errors.RestErr {
 	}
 	defer stm.Close()
 	result := stm.QueryRow(user.Id)
-	if err := result.Scan(&user.Id, &user.FirsName, &user.LastNAme, &user.Email, &user.DateCreated); err != nil {
+	if err := result.Scan(&user.Id, &user.FirsName, &user.LastNAme, &user.Email, &user.DateCreated, &user.Status); err != nil {
 		fmt.Println(err)
 		return errors.NewInternalServerError("error when getting user from db " + err.Error())
 	}
@@ -42,7 +42,7 @@ func (user *User) Save() *errors.RestErr {
 	}
 	defer stm.Close()
 	user.DateCreated = time.Now().String()
-	insertResult, err := stm.Exec(user.FirsName, user.LastNAme, user.Email, user.DateCreated)
+	insertResult, err := stm.Exec(user.FirsName, user.LastNAme, user.Email, user.DateCreated, user.Status, user.Password)
 	if err != nil {
 		return errors.NewInternalServerError("error trying to save user : " + err.Error())
 	}
@@ -100,7 +100,7 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 		result = append(result, newUser)
 	}
 	if len(result) == 0 {
-		return nil, errors.NewInternalServerError("no match while trying to find  user by status  : " + err.Error())
+		return nil, errors.NewInternalServerError("no match while trying to find  user by status  ")
 	}
 	return result, nil
 }
