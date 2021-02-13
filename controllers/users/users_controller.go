@@ -35,7 +35,7 @@ func Create(c *gin.Context) {
 		return
 	}
 	//fmt.Println(result)
-	c.JSON(http.StatusCreated, result)
+	c.JSON(http.StatusCreated, result.Marshal(c.GetHeader("X-Public")=="true"))
 }
 
 // handle every request for getting user from db
@@ -49,7 +49,7 @@ func Get(c *gin.Context) {
 	if getErr != nil {
 		c.JSON(getErr.Code, getErr)
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, user.Marshal(c.GetHeader("X-Public")=="true"))
 }
 
 func Update(c *gin.Context) {
@@ -73,7 +73,7 @@ func Update(c *gin.Context) {
 		c.JSON(err.Code, err)
 		return
 	}
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, result.Marshal(c.GetHeader("X-Public")=="true"))
 }
 
 func Delete(c *gin.Context) {
@@ -96,5 +96,5 @@ func Search(c *gin.Context) {
 		c.JSON(err.Code, err)
 		return
 	}
-	c.JSON(http.StatusOK, users)
+	c.JSON(http.StatusOK, users.Marshal(c.GetHeader("X-Public")=="true"))
 }
