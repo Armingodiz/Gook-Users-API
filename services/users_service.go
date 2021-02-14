@@ -6,7 +6,14 @@ import (
 	"github.com/ArminGodiz/Gook-Users-API/utils/errors"
 )
 
-func CreatUser(user users.User) (*users.User, *errors.RestErr) {
+var (
+	UsersService usersService = usersService{}
+)
+
+type usersService struct {
+}
+
+func (s *usersService) CreatUser(user users.User) (*users.User, *errors.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -18,7 +25,7 @@ func CreatUser(user users.User) (*users.User, *errors.RestErr) {
 	return &user, nil
 }
 
-func GetUser(userID int64) (*users.User, *errors.RestErr) {
+func (S *usersService) GetUser(userID int64) (*users.User, *errors.RestErr) {
 	result := &users.User{
 		Id: userID,
 	}
@@ -29,7 +36,7 @@ func GetUser(userID int64) (*users.User, *errors.RestErr) {
 }
 
 func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
-	current, err := GetUser(user.Id)
+	current, err := UsersService.GetUser(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +61,13 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 	return current, nil
 }
 
-func DeleteUser(userID int64) *errors.RestErr {
+func (s *usersService) DeleteUser(userID int64) *errors.RestErr {
 	result := &users.User{
 		Id: userID,
 	}
 	return result.Delete()
 }
-func Search(status string) (users.Users, *errors.RestErr) {
+func (s *usersService) Search(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
 	return dao.FindByStatus(status)
 }

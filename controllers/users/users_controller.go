@@ -29,13 +29,13 @@ func Create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, restErr)
 		return
 	}
-	result, saveErr := services.CreatUser(user)
+	result, saveErr := services.UsersService.CreatUser(user)
 	if saveErr != nil {
 		c.JSON(saveErr.Code, saveErr)
 		return
 	}
 	//fmt.Println(result)
-	c.JSON(http.StatusCreated, result.Marshal(c.GetHeader("X-Public")=="true"))
+	c.JSON(http.StatusCreated, result.Marshal(c.GetHeader("X-Public") == "true"))
 }
 
 // handle every request for getting user from db
@@ -45,11 +45,11 @@ func Get(c *gin.Context) {
 		c.JSON(userErr.Code, userErr)
 		return
 	}
-	user, getErr := services.GetUser(userID)
+	user, getErr := services.UsersService.GetUser(userID)
 	if getErr != nil {
 		c.JSON(getErr.Code, getErr)
 	}
-	c.JSON(http.StatusOK, user.Marshal(c.GetHeader("X-Public")=="true"))
+	c.JSON(http.StatusOK, user.Marshal(c.GetHeader("X-Public") == "true"))
 }
 
 func Update(c *gin.Context) {
@@ -73,7 +73,7 @@ func Update(c *gin.Context) {
 		c.JSON(err.Code, err)
 		return
 	}
-	c.JSON(http.StatusOK, result.Marshal(c.GetHeader("X-Public")=="true"))
+	c.JSON(http.StatusOK, result.Marshal(c.GetHeader("X-Public") == "true"))
 }
 
 func Delete(c *gin.Context) {
@@ -82,7 +82,7 @@ func Delete(c *gin.Context) {
 		c.JSON(userErr.Code, userErr)
 		return
 	}
-	if err := services.DeleteUser(userID); err != nil {
+	if err := services.UsersService.DeleteUser(userID); err != nil {
 		c.JSON(err.Code, err)
 		return
 	}
@@ -91,10 +91,10 @@ func Delete(c *gin.Context) {
 }
 func Search(c *gin.Context) {
 	status := c.Query("status")
-	users, err := services.Search(status)
+	users, err := services.UsersService.Search(status)
 	if err != nil {
 		c.JSON(err.Code, err)
 		return
 	}
-	c.JSON(http.StatusOK, users.Marshal(c.GetHeader("X-Public")=="true"))
+	c.JSON(http.StatusOK, users.Marshal(c.GetHeader("X-Public") == "true"))
 }
