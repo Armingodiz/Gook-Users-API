@@ -7,10 +7,18 @@ import (
 )
 
 var (
-	UsersService usersService = usersService{}
+	UsersService usersServiceInterface = &usersService{}
 )
 
 type usersService struct {
+}
+
+type usersServiceInterface interface {
+	CreatUser(users.User) (*users.User, *errors.RestErr)
+	GetUser(int64) (*users.User, *errors.RestErr)
+	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
+	DeleteUser(int64) *errors.RestErr
+	Search(string) (users.Users, *errors.RestErr)
 }
 
 func (s *usersService) CreatUser(user users.User) (*users.User, *errors.RestErr) {
@@ -35,7 +43,7 @@ func (S *usersService) GetUser(userID int64) (*users.User, *errors.RestErr) {
 	return result, nil
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
+func (s *usersService) UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
 	current, err := UsersService.GetUser(user.Id)
 	if err != nil {
 		return nil, err
