@@ -1,8 +1,8 @@
 package users
 
 import (
-	"fmt"
 	"github.com/ArminGodiz/Gook-Users-API/datasources/mysql/users_db"
+	"github.com/ArminGodiz/Gook-Users-API/logger"
 	"github.com/ArminGodiz/Gook-Users-API/utils/errors"
 	"time"
 )
@@ -24,13 +24,15 @@ var (
 func (user *User) Get() *errors.RestErr {
 	stm, err := users_db.Client.Prepare(queryGetUser)
 	if err != nil {
-		return errors.NewInternalServerError("error when getting user from db " + err.Error())
+		logger.Error("error while trying get user from db ", err)
+		// *******  we dont pass the err message to user because of security aspects !! ********
+		return errors.NewInternalServerError("error in DB !")
 	}
 	defer stm.Close()
 	result := stm.QueryRow(user.Id)
 	if err := result.Scan(&user.Id, &user.FirsName, &user.LastNAme, &user.Email, &user.DateCreated, &user.Status); err != nil {
-		fmt.Println(err)
-		return errors.NewInternalServerError("error when getting user from db " + err.Error())
+		logger.Error("error while trying get user from db ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	return nil
 }
@@ -38,18 +40,20 @@ func (user *User) Get() *errors.RestErr {
 func (user *User) Save() *errors.RestErr {
 	stm, err := users_db.Client.Prepare(queryInsertUser)
 	if err != nil {
-		return errors.NewInternalServerError("error trying to save user : " + err.Error())
+		logger.Error("error trying to save user : ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	defer stm.Close()
 	user.DateCreated = time.Now().String()
 	insertResult, err := stm.Exec(user.FirsName, user.LastNAme, user.Email, user.DateCreated, user.Status, user.Password)
 	if err != nil {
-		return errors.NewInternalServerError("error trying to save user : " + err.Error())
+		logger.Error("error trying to save user : ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	userId, err := insertResult.LastInsertId()
 	if err != nil {
-		return errors.NewInternalServerError("error trying to save user : " + err.Error())
-
+		logger.Error("error trying to save user : ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	user.Id = userId
 	return nil
@@ -58,12 +62,14 @@ func (user *User) Save() *errors.RestErr {
 func (user *User) Update() *errors.RestErr {
 	stm, err := users_db.Client.Prepare(queryUpdateUser)
 	if err != nil {
-		return errors.NewInternalServerError("error trying to Update user : " + err.Error())
+		logger.Error("error trying to Update user : ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	defer stm.Close()
 	_, err = stm.Exec(user.FirsName, user.LastNAme, user.Email, user.Id)
 	if err != nil {
-		return errors.NewInternalServerError("error trying to Update user : " + err.Error())
+		logger.Error("error trying to Update user : ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	return nil
 }
@@ -71,11 +77,13 @@ func (user *User) Update() *errors.RestErr {
 func (user *User) Delete() *errors.RestErr {
 	stm, err := users_db.Client.Prepare(queryDeleteUser)
 	if err != nil {
-		return errors.NewInternalServerError("error trying to delete user : " + err.Error())
+		logger.Error("error trying to delete user : ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	defer stm.Close()
 	if _, err := stm.Exec(user.Id); err != nil {
-		return errors.NewInternalServerError("error trying to delete user : " + err.Error())
+		logger.Error("error trying to delete user : ", err)
+		return errors.NewInternalServerError("error in DB !")
 	}
 	return nil
 }
@@ -83,19 +91,22 @@ func (user *User) Delete() *errors.RestErr {
 func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 	stm, err := users_db.Client.Prepare(queryFoundUserByStatus)
 	if err != nil {
-		return nil, errors.NewInternalServerError("error trying to find  user by status  : " + err.Error())
+		logger.Error("error trying to find  user by status  : ", err)
+		return nil, errors.NewInternalServerError("error in DB !")
 	}
 	defer stm.Close()
 	rows, err := stm.Query(status)
 	if err != nil {
-		return nil, errors.NewInternalServerError("error trying to find  user by status  : " + err.Error())
+		logger.Error("error trying to find  user by status  : ", err)
+		return nil, errors.NewInternalServerError("error in DB !")
 	}
 	defer rows.Close()
 	result := make([]User, 0)
 	for rows.Next() {
 		var newUser User
 		if err := rows.Scan(&newUser.Id, &newUser.FirsName, &newUser.LastNAme, &newUser.Email, &newUser.DateCreated, &newUser.Status); err != nil {
-			return nil, errors.NewInternalServerError("error trying to find  user by status  : " + err.Error())
+			logger.Error("error trying to find  user by status  : ", err)
+			return nil, errors.NewInternalServerError("error in DB !")
 		}
 		result = append(result, newUser)
 	}
