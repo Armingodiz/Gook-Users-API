@@ -28,3 +28,15 @@ func init() {
 		panic(err)
 	}
 }
+func GetLogger() *zap.Logger {
+	return Log
+}
+func Info(msg string, tags ...zap.Field) {
+	Log.Info(msg, tags...)
+	Log.Sync()
+}
+
+func Error(msg string, tags ...zap.Field) {
+	Log.Error(msg, tags...)
+	Log.Sync()
+}
