@@ -10,11 +10,12 @@ import (
 // user data access object
 
 const (
-	queryInsertUser        = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?, ?, ?, ?, ?, ?);"
-	queryGetUser           = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE id=?;"
-	queryUpdateUser        = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
-	queryDeleteUser        = "DELETE FROM users WHERE id=?;"
-	queryFoundUserByStatus = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?;"
+	queryInsertUser             = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?, ?, ?, ?, ?, ?);"
+	queryGetUser                = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE id=?;"
+	queryUpdateUser             = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
+	queryDeleteUser             = "DELETE FROM users WHERE id=?;"
+	queryFoundUserByStatus      = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?;"
+	queryFindByEmailAndPassword = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE email=? AND password=?;"
 )
 
 var (
@@ -114,4 +115,19 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 		return nil, errors.NewInternalServerError("no match while trying to find  user by status  ")
 	}
 	return result, nil
+}
+func (user *User) FindByEmailAndPassword() *errors.RestErr {
+	stm, err := users_db.Client.Prepare(queryFindByEmailAndPassword)
+	if err != nil {
+		logger.Error("error while trying get user from db ", err)
+		// *******  we dont pass the err message to user because of security aspects !! ********
+		return errors.NewInternalServerError("error in DB !")
+	}
+	defer stm.Close()
+	result := stm.QueryRow(user.Email, user.Password)
+	if err := result.Scan(&user.Id, &user.FirsName, &user.LastNAme, &user.Email, &user.DateCreated, &user.Status); err != nil {
+		logger.Error("error while trying get user from db ", err)
+		return errors.NewInternalServerError("error in DB !")
+	}
+	return nil
 }
