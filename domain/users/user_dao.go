@@ -15,7 +15,7 @@ const (
 	queryUpdateUser             = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?;"
 	queryDeleteUser             = "DELETE FROM users WHERE id=?;"
 	queryFoundUserByStatus      = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE status=?;"
-	queryFindByEmailAndPassword = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE email=? AND password=?;"
+	queryFindByEmailAndPassword = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE email=? AND password=? AND status=?;"
 )
 
 var (
@@ -124,7 +124,7 @@ func (user *User) FindByEmailAndPassword() *errors.RestErr {
 		return errors.NewInternalServerError("error in DB !")
 	}
 	defer stm.Close()
-	result := stm.QueryRow(user.Email, user.Password)
+	result := stm.QueryRow(user.Email, user.Password, StatusActive)
 	if err := result.Scan(&user.Id, &user.FirsName, &user.LastNAme, &user.Email, &user.DateCreated, &user.Status); err != nil {
 		logger.Error("error while trying get user from db ", err)
 		return errors.NewInternalServerError("error in DB !")
