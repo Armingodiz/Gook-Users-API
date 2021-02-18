@@ -3,6 +3,7 @@ package users
 import (
 	"github.com/ArminGodiz/Gook-Users-API/domain/users"
 	"github.com/ArminGodiz/Gook-Users-API/services"
+	"github.com/ArminGodiz/Gook-Users-API/services/oauth"
 	"github.com/ArminGodiz/Gook-Users-API/utils/errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -40,6 +41,10 @@ func Create(c *gin.Context) {
 
 // handle every request for getting user from db
 func Get(c *gin.Context) {
+	if err := oauth.AuthenticateRequest(c.Request); err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
 	userID, userErr := getUserID(c.Param("user_id"))
 	if userErr != nil {
 		c.JSON(userErr.Code, userErr)
@@ -49,7 +54,10 @@ func Get(c *gin.Context) {
 	if getErr != nil {
 		c.JSON(getErr.Code, getErr)
 	}
-	c.JSON(http.StatusOK, user.Marshal(c.GetHeader("X-Public") == "true"))
+	if oauth.GetCallerId(c.Request) == user.Id {
+		c.JSON(http.StatusOK, user.Marshal(false))
+	}
+	c.JSON(http.StatusOK, user.Marshal(oauth.IsPublic(c.Request)))
 }
 
 func Update(c *gin.Context) {

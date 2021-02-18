@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"github.com/ArminGodiz/Gook-Users-API/datasources/mysql/users_db"
 	"github.com/ArminGodiz/Gook-Users-API/logger"
 	"github.com/ArminGodiz/Gook-Users-API/utils/errors"
@@ -119,6 +120,7 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 func (user *User) FindByEmailAndPassword() *errors.RestErr {
 	stm, err := users_db.Client.Prepare(queryFindByEmailAndPassword)
 	if err != nil {
+		fmt.Println("tsss111")
 		logger.Error("error while trying get user from db ", err)
 		// *******  we dont pass the err message to user because of security aspects !! ********
 		return errors.NewInternalServerError("error in DB !")
@@ -126,6 +128,7 @@ func (user *User) FindByEmailAndPassword() *errors.RestErr {
 	defer stm.Close()
 	result := stm.QueryRow(user.Email, user.Password, StatusActive)
 	if err := result.Scan(&user.Id, &user.FirsName, &user.LastNAme, &user.Email, &user.DateCreated, &user.Status); err != nil {
+		fmt.Println("tsssss")
 		logger.Error("error while trying get user from db ", err)
 		return errors.NewInternalServerError("error in DB !")
 	}
