@@ -1,7 +1,7 @@
 # Gook-Users-API
 
 
-This is one of the [Gook](https://github.com/Armingodiz/Gook) services which provide DB for saving users and intractions with oauth api for login and creating access token . 
+This is one of the [Gook](https://github.com/Armingodiz/Gook) services which provide DB for saving users and intractions with oauth api for login and creating access token which follow mvc design pattern .
 
 ## Features 
 
